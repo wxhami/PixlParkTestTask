@@ -1,0 +1,41 @@
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Localization.ChooseLanguage> Loc
+
+<form class="form-inline" style="display: flex">
+    <select class="form-control" @bind="_selectedCulture">
+        @foreach (var culture in _cultures)
+        {
+            <option value="@culture.Value">@culture.Key</option>
+        }
+    </select>
+    <button class="btn btn-outline-primary" style="margin-left: 5px" @onclick="RequestCultureChange">@Loc["Change"]</button>
+</form>
+
+@code {
+    private string _selectedCulture = null!;
+    private Dictionary<string, string> _cultures = null!;
+
+
+    protected override void OnInitialized()
+    {
+        _cultures = new Dictionary<string, string>() { { "Russian", "ru-RU" }, { "English", "en-US" } };
+        _selectedCulture = _cultures.Values.FirstOrDefault(x => x.Contains(Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName)) ?? _cultures["English"];
+    }
+
+    private void RequestCultureChange()
+    {
+        if (string.IsNullOrWhiteSpace(_selectedCulture))
+        {
+            return;
+        }
+
+        var uri = new Uri(NavigationManager.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+        var query = $"?culture={Uri.EscapeDataString(new CultureInfo(_selectedCulture).Name)}" +
+                    $"&redirectUri={Uri.EscapeDataString(uri)}";
+
+        NavigationManager.NavigateTo("/culture/set" + query, forceLoad: true);
+    }
+
+}

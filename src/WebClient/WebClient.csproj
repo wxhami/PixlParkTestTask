@@ -1,0 +1,90 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>2c6670e4-64d8-4288-90c6-002d623d59dd</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MassTransit" Version="8.3.6" />
+      <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
+      <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.2" />
+      <PackageReference Include="MinimalApi.Endpoint" Version="1.3.0" />
+      <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Pages.resx\CodeInput.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages.resx\CorrectCode.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages.resx\Home.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages.resx\InvalidCode.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Components\Localization\Home.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Home.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Components\Localization\InvalidCode.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>InvalidCode.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Components\Localization\CorrectCode.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>CorrectCode.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Components\Localization\CodeInput.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>CodeInput.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Components\Localization\ChooseLanguage.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>ChooseLanguage.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Components\Localization\ChooseLanguage.ru-ru.resx">
+        <DependentUpon>ChooseLanguage.resx</DependentUpon>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Components\Localization\Home.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Home.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Components\Localization\InvalidCode.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>InvalidCode.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Components\Localization\CorrectCode.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>CorrectCode.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Components\Localization\CodeInput.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>CodeInput.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Components\Localization\ChooseLanguage.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>ChooseLanguage.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    </ItemGroup>
+
+</Project>

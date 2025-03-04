@@ -1,0 +1,13 @@
+﻿@inherits LayoutComponentBase
+
+<div class="main">
+    <div class="top-row px-4">
+       <span class="pr-2"></span> <ChooseLanguage/>
+    </div>
+</div>
+
+<div class="page position-relative" style="min-height: 100vh;">
+    <div class="content px-4 position-absolute top-50 start-50" style="transform: translate(-50%, -50%) scale(2);">
+        @Body
+    </div>
+</div>

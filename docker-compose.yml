@@ -1,0 +1,80 @@
+﻿version: '3.8'
+
+services:
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis-data:/data
+  
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 15s
+      retries: 1
+  
+  server:
+    build:
+      context: .
+      dockerfile: src/ServerService/Dockerfile
+    container_name: server
+    environment:
+      RedisOptions__ConnectionString: ${REDIS_CONNECTION_STRING}
+      RabbitMqOptions__Username: ${RABBITMQ_USERNAME_SERVER}
+      RabbitMqOptions__Password: ${RABBITMQ_PASSWORD_SERVER}
+      RabbitMqOptions__Host: ${RABBITMQ_HOST_SERVER}
+      RabbitMqOptions__Port: ${RABBITMQ_PORT_SERVER}
+      RabbitMqOptions__VirtualHost: ${RABBITMQ_VIRTUALHOST_SERVER}
+      EmailOptions__MailSender: ${MAIL_SENDER}
+      EmailOptions__Password: ${MAIL_PASSWORD}
+      EmailOptions__SmtpHost: ${SMTP_HOST}
+      EmailOptions__SmtpPort: ${SMTP_PORT}
+    ports:
+      - "${SERVER_PORT}:8080"
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+  
+  
+  webclient:
+    build:
+      context: .
+      dockerfile: src/WebClient/Dockerfile
+    container_name: webclient
+    environment:
+      ServerServiceHttpClientOptions__BaseUrl: ${BASE_URL}
+      RabbitMqOptions__Username: ${RABBITMQ_USERNAME_WEBCLIENT}
+      RabbitMqOptions__Password: ${RABBITMQ_PASSWORD_WEBCLIENT}
+      RabbitMqOptions__Host: ${RABBITMQ_HOST_WEBCLIENT}
+      RabbitMqOptions__Port: ${RABBITMQ_PORT_WEBCLIENT}
+      RabbitMqOptions__VirtualHost: ${RABBITMQ_VIRTUALHOST_WEBCLIENT}
+    ports:
+      - "${WEBCLIENT_PORT}:8080"
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      server:
+        condition: service_started
+
+volumes:
+  redis-data:
+  rabbitmq-data:
+  
+  
+  

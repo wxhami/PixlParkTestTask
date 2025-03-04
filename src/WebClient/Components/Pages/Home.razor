@@ -1,0 +1,107 @@
+﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@using Contracts
+@using MassTransit
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Logging
+
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Localization.Home> Loc
+@inject IPublishEndpoint PublishEndpoint
+@inject ILogger<Index> Logger
+@inject IServerServiceClient Client
+
+
+<h3>@(_isEmailStep ? Loc["Enter your email"] : Loc["Input code"])</h3>
+
+<EditForm EditContext="_editContext" OnSubmit="@HandleSubmit" FormName="emailForm">
+    <DataAnnotationsValidator/>
+    @if (_message != null)
+    {
+        <p>@_message</p>
+    }
+
+    @if (_isEmailStep)
+    {
+
+            <InputText @bind-Value="_model.Email" placeholder=@Loc["Enter email"]/>
+    }
+    else
+    {
+            <InputText @bind-Value="_codeModel.Code" placeholder=@Loc["Input code"]/>
+    }
+
+    <button type="submit">
+        @(_isEmailStep ? Loc["Send"] : Loc["Confirm code"])
+    </button>
+</EditForm>
+
+@code {
+    private EditContext? _editContext;
+    private EmailModel _model = new EmailModel();
+    private CodeModel _codeModel = new CodeModel();
+    private string? _message = null;
+    private bool _isEmailStep = true;
+    private static string? _mail;
+    private static string? _code;
+
+    protected override void OnInitialized()
+    {
+        _model ??= new();
+        _editContext = new(_model);
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_isEmailStep)
+        {
+            if (_editContext?.Validate() ?? false)
+            {
+                Logger.LogDebug("Sending email: {Email}", _model.Email);
+                await PublishEndpoint.Publish<EmailMessage>(new { Email = _model.Email });
+                _isEmailStep = false;
+                _editContext = new(_codeModel);
+                _message = null;
+                _mail = _model.Email;
+                Logger.LogDebug("Email sent successfully. Waiting for code input.");
+            }
+            else
+            {
+                _message = Loc["Invalid format"];
+                Logger.LogDebug("Invalid email format: {Email}", _model.Email);
+            }
+        }
+        else
+        {
+            _code = _codeModel.Code;
+            Logger.LogDebug("Received code: {Code} for email: {Email}", _code, _mail);
+
+            if (_mail != null)
+            {
+                var codeInformation = await Client.GetCodeInfoAsync(_mail);
+
+                if (codeInformation != null && codeInformation.Email == _mail && codeInformation.Code == _code)
+                {
+                    Logger.LogDebug("Code is correct for email: {Email}", _mail);
+                    Navigation.NavigateTo("/CorrectCode");
+                }
+                else
+                {
+                    Logger.LogDebug("Invalid code for email: {Email}", _mail);
+                    Navigation.NavigateTo("/InvalidCode");
+                }
+            }
+        }
+    }
+
+    public class EmailModel
+    {
+        [Required] [EmailAddress] public string? Email { get; set; } = string.Empty;
+    }
+
+    public class CodeModel
+    {
+        public string? Code { get; set; } = string.Empty;
+    }
+
+}
